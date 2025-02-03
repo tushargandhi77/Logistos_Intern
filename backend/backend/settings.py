@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'content_api',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +77,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'sampledatabase_jl0p',
+        'USER': 'sampledatabase_jl0p_user',
+        'PASSWORD': 'xuYwlg1NAW060sWraMdSB8D8P9F6RkOT',
+        'HOST': 'dpg-cu6hdnqj1k6c73f7i7d0-a.oregon-postgres.render.com',  # Updated host
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
