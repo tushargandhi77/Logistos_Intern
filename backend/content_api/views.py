@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.parsers import JSONParser  # Use JSONParser instead of MultiPartParser
+from rest_framework.parsers import JSONParser  
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Content
