@@ -3,6 +3,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Content
+from django.shortcuts import get_object_or_404
 from .serializers import ContentSerializer
 
 class ContentViewSet(viewsets.ModelViewSet):
@@ -23,31 +24,34 @@ class ContentViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def update_by_type(self, request):
-        content_type = request.data.get('type', None)
-        if not content_type:
-            return Response({"error": "Type parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+    def update(self, request, pk=None, *args, **kwargs):
         try:
-            content = Content.objects.get(type=content_type) 
-        except Content.MultipleObjectsReturned:
-            return Response({"error": "Multiple records found, use a more specific filter"}, status=status.HTTP_400_BAD_REQUEST)
-        except Content.DoesNotExist:
-            return Response({"error": "Content not found"}, status=status.HTTP_404_NOT_FOUND)
+            content = get_object_or_404(Content, pk=pk)
+            serializer = self.get_serializer(content, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update content: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    def destroy(self, request, pk=None, *args, **kwargs):
+        try:
+            content = get_object_or_404(Content, pk=pk)
+            content.delete()
+            return Response(
+                {'message': f'Content with id {pk} has been deleted successfully'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete content: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        serializer = self.get_serializer(content, data=request.data, partial=True) 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete_by_type(self, request):
-        content_type = request.data.get('type', None)
-        if not content_type:
-            return Response({"error": "Type parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        deleted_count, _ = Content.objects.filter(type=content_type).delete()
-        if deleted_count == 0:
-            return Response({"error": "No matching content found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        return Response({"message": f"{deleted_count} content(s) deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    
+    
